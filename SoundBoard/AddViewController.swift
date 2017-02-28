@@ -22,13 +22,13 @@ class AddViewController: UIViewController {
     var audioPlayer=AVAudioPlayer()
     var audioUrl:URL?
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
         setUpRecorder()
-    lblPlay.isEnabled=false
+        lblPlay.isEnabled=false
+        lblAdd.isEnabled=false
     }
     
     override func didReceiveMemoryWarning() {
@@ -45,9 +45,12 @@ class AddViewController: UIViewController {
             try session.setActive(true)
             //Create audio URL
             let basePath:String=NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-            let pathComponents=[basePath,"audio1.m4a"]
+            let nsdt=NSDate()
+            let filename="\(nsdt) - audio.m4a"
+            let pathComponents=[basePath,filename]
+            
             audioUrl=NSURL.fileURL(withPathComponents: pathComponents)
-            txtTitle.text=String(describing: audioUrl)
+            
             //Add settings to dictionary
             var settings:[String:Any]=[:]
             settings[AVFormatIDKey]=Int(kAudioFormatMPEG4AAC)
@@ -70,10 +73,13 @@ class AddViewController: UIViewController {
             audioRecorder?.stop()
             lblRecord.setTitle("Record", for: .normal)
             lblPlay.isEnabled=true
+            lblAdd.isEnabled=true
+            self.view.backgroundColor=#colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
         }
         else{
             audioRecorder?.record()
             lblRecord.setTitle("Stop", for: .normal)
+            self.view.backgroundColor=#colorLiteral(red: 0.7450980544, green: 0.1568627506, blue: 0.07450980693, alpha: 1)
         }
     }
     
@@ -89,6 +95,13 @@ class AddViewController: UIViewController {
     }
     
     @IBAction func btnAdd(_ sender: AnyObject) {
+        let context=UIApplication.shared.delegate as! AppDelegate
+        let record:Record=Record(context: context.persistentContainer.viewContext)
+
+        record.title=txtTitle.text
+        record.sound=NSData(contentsOf: audioUrl!)
         
+        context.saveContext()
+        navigationController!.popViewController(animated: true)
     }
 }
